@@ -10,5 +10,7 @@ public class BotonJuego : Button
         Cursor = Cursors.Hand;
         Font = new Font("Segoe UI", 11, FontStyle.Regular);
         UseVisualStyleBackColor = true;
+        AutoSize = true;
+        AutoSizeMode = AutoSizeMode.GrowAndShrink;
     }
 }

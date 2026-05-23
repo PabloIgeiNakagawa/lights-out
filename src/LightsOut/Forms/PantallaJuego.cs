@@ -48,18 +48,18 @@ public class PantallaJuego : UserControl
     private List<int[]> movimientosPista = new();
     private int indicePista;
 
-    // Inicializa modelo, construye UI y arranca el timer de 1 segundo.
     public PantallaJuego(int tamano)
     {
         tablero = new Tablero(tamano);
         tablero.Randomizar();
 
+        // El UserControl principal se adapta al tamaño de la ventana
         Dock = DockStyle.Fill;
 
         // --- Norte: info (Volver, Turnos, Tiempo, Record) ---
         var panelInfo = new FlowLayoutPanel
         {
-            Dock = DockStyle.Top,
+            Dock = DockStyle.Fill, // Llena su celda asignada en la cuadrícula
             FlowDirection = FlowDirection.LeftToRight,
             AutoSize = true,
             Padding = new Padding(5),
@@ -85,12 +85,15 @@ public class PantallaJuego : UserControl
 
         // --- Centro: grilla del tablero ---
         vistaTablero = new ControlTablero(tamano, BtnClickHandler);
-        vistaTablero.Dock = DockStyle.Fill;
+        vistaTablero.Dock = DockStyle.None;
+        vistaTablero.AutoSize = true;
+        vistaTablero.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+        vistaTablero.Anchor = AnchorStyles.None;
 
         // --- Sur: acciones (Reiniciar, Pista, Silenciar, Volumen, Color) ---
         var panelInferior = new FlowLayoutPanel
         {
-            Dock = DockStyle.Bottom,
+            Dock = DockStyle.Fill, // Llena su celda asignada en la cuadrícula
             FlowDirection = FlowDirection.LeftToRight,
             AutoSize = true,
             Padding = new Padding(5),
@@ -105,7 +108,8 @@ public class PantallaJuego : UserControl
         panelInferior.Controls.Add(botonPista);
 
         botonMute = new BotonJuego("Silenciar");
-        botonMute.Size = new Size(130, 28);
+        botonMute.Size = new Size(130, 32);
+        botonMute.AutoSize = false;
         botonMute.Click += (_, _) => ToggleMute();
         panelInferior.Controls.Add(botonMute);
 
@@ -151,9 +155,27 @@ public class PantallaJuego : UserControl
         };
         timerSegundo.Start();
 
-        Controls.Add(panelInfo);
-        Controls.Add(vistaTablero);
-        Controls.Add(panelInferior);
+        // --- Creación del Contenedor Principal (Cuadrícula invisible) ---
+        var contenedorPrincipal = new TableLayoutPanel
+        {
+            Dock = DockStyle.Fill,
+            ColumnCount = 1,
+            RowCount = 3,
+            Padding = new Padding(20) // Margen de cortesía alrededor de todo el juego
+        };
+
+        // Definimos las proporciones de las 3 filas
+        contenedorPrincipal.RowStyles.Add(new RowStyle(SizeType.AutoSize));   // Fila 0: Info superior
+        contenedorPrincipal.RowStyles.Add(new RowStyle(SizeType.Percent, 100F)); // Fila 1: Tablero (toma todo el resto)
+        contenedorPrincipal.RowStyles.Add(new RowStyle(SizeType.AutoSize));   // Fila 2: Controles inferiores
+
+        // Asignamos cada panel y el tablero a su respectiva fila
+        contenedorPrincipal.Controls.Add(panelInfo, 0, 0);
+        contenedorPrincipal.Controls.Add(vistaTablero, 0, 1);
+        contenedorPrincipal.Controls.Add(panelInferior, 0, 2);
+
+        // Agregamos únicamente la cuadrícula estructurada al UserControl
+        Controls.Add(contenedorPrincipal);
     }
 
     // Convierte el estado del modelo a matriz bool[,] para actualizar la vista.
