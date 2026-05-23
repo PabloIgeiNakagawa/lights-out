@@ -1,5 +1,17 @@
-/bin/
+## .NET
+bin/
+obj/
+*.user
+*.suo
+.vs/
+
+## Project-specific
 AGENTS.md
+lightout_data.txt
+
+## Legacy Java
+*.class
+*.jar
 .classpath
 .project
 .settings/
