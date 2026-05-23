@@ -18,13 +18,27 @@ public class PantallaEstadisticas : UserControl
         Dock = DockStyle.Fill;
         Padding = new Padding(30);
 
+        var contenedorPrincipal = new TableLayoutPanel
+        {
+            Dock = DockStyle.Fill,
+            ColumnCount = 1,
+            RowCount = 3,
+        };
+
+        // Fila 1: Título (alto fijo de 60)
+        contenedorPrincipal.RowStyles.Add(new RowStyle(SizeType.Absolute, 60F));
+        // Fila 2: Tabla (ocupa todo el espacio restante disponible)
+        contenedorPrincipal.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
+        // Fila 3: Botones (alto fijo de 60)
+        contenedorPrincipal.RowStyles.Add(new RowStyle(SizeType.Absolute, 60F));
+
         // Título centrado arriba
         var titulo = new Label
         {
             Text = "ESTADÍSTICAS",
             Font = new Font("Segoe UI", 28, FontStyle.Bold),
             TextAlign = ContentAlignment.MiddleCenter,
-            Dock = DockStyle.Top,
+            Dock = DockStyle.Fill,
             Height = 60,
         };
 
@@ -48,14 +62,12 @@ public class PantallaEstadisticas : UserControl
             Font = new Font("Segoe UI", 14),
             RowHeadersVisible = false,
             Dock = DockStyle.Fill,
+            ColumnHeadersHeight = 58
         };
 
         CargarDatos();
 
-        Controls.Add(titulo);
-        Controls.Add(tabla);
-
-        // Botones inferiores (Cerrar, Resetear estadísticas)
+        // Botones inferiores (Volver, Resetear estadísticas)
         var flowBotones = new FlowLayoutPanel
         {
             Dock = DockStyle.Bottom,
@@ -65,9 +77,9 @@ public class PantallaEstadisticas : UserControl
             Padding = new Padding(0, 10, 0, 0),
         };
 
-        var btnCerrar = new BotonMenu("Cerrar");
-        btnCerrar.Click += (_, _) => ventanaJuego.MostrarMenu();
-        flowBotones.Controls.Add(btnCerrar);
+        var btnVolver = new BotonMenu("Volver");
+        btnVolver.Click += (_, _) => ventanaJuego.MostrarMenu();
+        flowBotones.Controls.Add(btnVolver);
 
         var btnReset = new BotonMenu("Resetear estadísticas") { Margin = new Padding(15, 6, 0, 6) };
         btnReset.Click += (_, _) =>
@@ -95,11 +107,18 @@ public class PantallaEstadisticas : UserControl
             flowBotones.Location = new Point((panelBotones.Width - flowBotones.Width) / 2, 10);
         };
         panelBotones.Controls.Add(flowBotones);
-        Controls.Add(panelBotones);
+
+        // Agregamos los controles a sus respectivas celdas de la cuadrícula
+        contenedorPrincipal.Controls.Add(titulo, 0, 0);       // Fila 0
+        contenedorPrincipal.Controls.Add(tabla, 0, 1);        // Fila 1
+        contenedorPrincipal.Controls.Add(panelBotones, 0, 2); // Fila 2
+
+        // Finalmente, agregamos la cuadrícula al UserControl
+        Controls.Add(contenedorPrincipal);
     }
 
     // Refresca las filas de la tabla desde EstadisticasRepository.
-    public void CargarDatos()
+    private void CargarDatos()
     {
         modeloTabla.Rows.Clear();
         for (int n = 3; n <= 8; n++)

@@ -77,7 +77,7 @@ public class VentanaPrincipal : Form
         panelPrincipal.Controls.Add(panel);
         panel.Dock = DockStyle.Fill;
 
-        Size = new Size(680, 480);
+        Size = new Size(850, 480);
         CenterToScreen();
         Text = "Lights Out - Estadísticas";
     }
