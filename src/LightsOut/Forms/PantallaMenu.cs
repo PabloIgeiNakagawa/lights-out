@@ -63,6 +63,7 @@ public class PantallaMenu : UserControl
             Font = new Font("Segoe UI", 16),
             ForeColor = Color.FromArgb(200, 200, 200),
             AutoSize = true,
+            Anchor = AnchorStyles.None,
             Margin = new Padding(0, 0, 0, 15),
         });
 
@@ -72,13 +73,14 @@ public class PantallaMenu : UserControl
             Text = "━━━━━━━━━━━━━━━━━━━━",
             ForeColor = Color.Gray,
             AutoSize = true,
+            Anchor = AnchorStyles.None,
             Margin = new Padding(0, 0, 0, 10),
         });
 
         // Botones de dificultad predefinidos
         for (int i = 0; i < Niveles.Length; i++)
         {
-            var btn = new BotonMenu(Niveles[i]) { Margin = new Padding(0, 6, 0, 6) };
+            var btn = new BotonMenu(Niveles[i]) { Margin = new Padding(0, 6, 0, 6), Anchor = AnchorStyles.None };
             int idx = i;
             btn.Click += (_, _) => JuegoSolicitado?.Invoke(this, Tamanos[idx]);
             central.Controls.Add(btn);
@@ -90,6 +92,7 @@ public class PantallaMenu : UserControl
             Text = "━━━━━━━━━━━━━━━━━━━━",
             ForeColor = Color.Gray,
             AutoSize = true,
+            Anchor = AnchorStyles.None,
             Margin = new Padding(0, 10, 0, 10),
         });
 
@@ -99,6 +102,7 @@ public class PantallaMenu : UserControl
             AutoSize = true,
             FlowDirection = FlowDirection.LeftToRight,
             WrapContents = false,
+            Anchor = AnchorStyles.None,
         };
         panelSpinner.Controls.Add(new Label
         {
@@ -121,12 +125,12 @@ public class PantallaMenu : UserControl
         central.Controls.Add(panelSpinner);
 
         // Botón jugar con tamaño personalizado
-        var btnJugar = new BotonMenu("Jugar") { Margin = new Padding(0, 6, 0, 6) };
+        var btnJugar = new BotonMenu("Jugar") { Margin = new Padding(0, 6, 0, 6), Anchor = AnchorStyles.None };
         btnJugar.Click += (_, _) => JuegoSolicitado?.Invoke(this, (int)spinnerTamano.Value);
         central.Controls.Add(btnJugar);
 
         // Botón estadísticas
-        var btnStats = new BotonMenu("Estadísticas") { Margin = new Padding(0, 6, 0, 6) };
+        var btnStats = new BotonMenu("Estadísticas") { Margin = new Padding(0, 6, 0, 6), Anchor = AnchorStyles.None };
         btnStats.Click += (_, _) => EstadisticasSolicitadas?.Invoke(this, EventArgs.Empty);
         central.Controls.Add(btnStats);
 
@@ -136,11 +140,10 @@ public class PantallaMenu : UserControl
             ForeColor = Color.FromArgb(180, 255, 180),
             Font = new Font("Segoe UI", 12),
             AutoSize = true,
+            Anchor = AnchorStyles.None,
             Margin = new Padding(0, 10, 0, 0),
         };
         central.Controls.Add(labelStats);
-
-        Load += (_, _) => CentrarControles(central, titulo);
 
         Controls.Add(overlay);
 
@@ -162,13 +165,5 @@ public class PantallaMenu : UserControl
         labelStats.Text = totalJug > 0
             ? $"Récord: {mejorRecord} mov  |  Partidas: {totalJug}  |  Ganadas: {totalGan}"
             : "Bienvenido! Aún no hay partidas guardadas.";
-    }
-
-    private static void CentrarControles(TableLayoutPanel p, Control excepto)
-    {
-        int m = p.Controls.Cast<Control>().Where(c => c != excepto).Max(c => c.Width);
-        foreach (Control c in p.Controls)
-            if (c != excepto)
-                c.Margin = new Padding((m - c.Width) / 2, c.Margin.Top, 0, c.Margin.Bottom);
     }
 }
