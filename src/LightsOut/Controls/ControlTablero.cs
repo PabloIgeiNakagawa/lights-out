@@ -1,49 +1,56 @@
+using LightsOut.Model;
+using LightsOut.Sound;
 using System.Drawing.Drawing2D;
 
 namespace LightsOut.Controls;
 
-// Grilla N×N de botones con iconos circulares pintados en Bitmap.
-// Maneja el feedback visual al presionar una celda, los bordes de pista
-// y los 4 esquemas de color intercambiables en caliente.
 public class ControlTablero : UserControl
 {
-    // Cada esquema define dos colores: [apagado (claro), encendido (oscuro)]
     private static readonly Color[][] Esquemas =
     [
-        [Color.FromArgb(50, 200, 50),  Color.FromArgb(30, 30, 30)],    // Clásico
-        [Color.FromArgb(60, 130, 255), Color.FromArgb(20, 20, 50)],    // Noche
-        [Color.FromArgb(255, 200, 50), Color.FromArgb(180, 40, 40)],   // Fuego
-        [Color.FromArgb(100, 220, 220), Color.FromArgb(0, 60, 100)],   // Hielo
+        [Color.FromArgb(50, 200, 50),  Color.FromArgb(30, 30, 30)],
+        [Color.FromArgb(60, 130, 255), Color.FromArgb(20, 20, 50)],
+        [Color.FromArgb(255, 200, 50), Color.FromArgb(180, 40, 40)],
+        [Color.FromArgb(100, 220, 220), Color.FromArgb(0, 60, 100)],
     ];
 
     public static readonly string[] NombresEsquemas = ["Clásico", "Noche", "Fuego", "Hielo"];
 
-    // Color amarillo semitransparente para el feedback de fila/columna
     private static readonly Color ColorResalte = Color.FromArgb(180, 255, 255, 100);
 
     private readonly Button[,] botones;
-    private readonly int tamano;
+    private readonly Tablero tablero;
+    private readonly TableLayoutPanel grilla;
     private int esquemaActual;
     private int tamanoIcono;
     private Bitmap iconoApagado;
     private Bitmap iconoEncendido;
     private System.Windows.Forms.Timer timerFeedback;
+    private readonly System.Windows.Forms.Timer timerSegundo = new() { Interval = 1000 };
+    private int segundosTranscurridos;
+    private List<int[]> movimientosPista = new();
+    private int indicePista;
 
-    public int TamanoGrid => tamano;
+    public event Action<int, int, int> CeldaPresionada;
+    public event Action<int, int> Victoria;
+    public event Action<int> TickSegundo;
+
+    public int TamanoGrid => tablero.Tamano;
     public int EsquemaActual => esquemaActual;
+    public Tablero Tablero => tablero;
 
-    // Construye un TableLayoutPanel con N×N botones FlatStyle.
-    // Cada botón tiene Tag = (fila, columna) para identificar la celda.
-    public ControlTablero(int tamano, EventHandler clickHandler)
+    public ControlTablero(Tablero tablero)
     {
-        this.tamano = tamano;
-        this.tamanoIcono = Math.Max(40, Math.Min(70, 400 / tamano));
+        this.tablero = tablero;
+        tablero.Randomizar();
+        this.tamanoIcono = Math.Max(40, Math.Min(70, 400 / tablero.Tamano));
         GenerarIconos();
 
-        var grilla = new TableLayoutPanel
+        int n = tablero.Tamano;
+        grilla = new TableLayoutPanel
         {
-            RowCount = tamano,
-            ColumnCount = tamano,
+            RowCount = n,
+            ColumnCount = n,
             Dock = DockStyle.None,
             AutoSize = true,
             BackColor = Color.FromArgb(240, 240, 240),
@@ -51,18 +58,18 @@ public class ControlTablero : UserControl
 
         grilla.ColumnStyles.Clear();
         grilla.RowStyles.Clear();
-        for (int i = 0; i < tamano; i++)
+        for (int i = 0; i < n; i++)
         {
             grilla.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, tamanoIcono + 16));
             grilla.RowStyles.Add(new RowStyle(SizeType.Absolute, tamanoIcono + 16));
         }
 
-        botones = new Button[tamano, tamano];
+        botones = new Button[n, n];
         var btnSize = new Size(tamanoIcono + 16, tamanoIcono + 16);
 
-        for (int f = 0; f < tamano; f++)
+        for (int f = 0; f < n; f++)
         {
-            for (int c = 0; c < tamano; c++)
+            for (int c = 0; c < n; c++)
             {
                 var btn = new Button
                 {
@@ -72,21 +79,119 @@ public class ControlTablero : UserControl
                     Cursor = Cursors.Hand,
                 };
                 btn.FlatAppearance.BorderSize = 0;
-                btn.Click += clickHandler;
+                btn.Click += BtnClickHandler;
                 botones[f, c] = btn;
                 grilla.Controls.Add(btn, c, f);
             }
         }
 
         Controls.Add(grilla);
-        grilla.Left = (Width - grilla.Width) / 2;
-        grilla.Top = (Height - grilla.Height) / 2;
 
-        ActualizarTodos(new bool[tamano, tamano]);
+        Resize += (_, _) =>
+        {
+            grilla.Left = (Width - grilla.Width) / 2;
+            grilla.Top = (Height - grilla.Height) / 2;
+        };
+
+        timerSegundo.Tick += (_, _) =>
+        {
+            segundosTranscurridos++;
+            TickSegundo?.Invoke(segundosTranscurridos);
+        };
+        timerSegundo.Start();
+
+        ActualizarTodos();
     }
 
-    // Pinta dos Bitmap con círculos: uno claro (apagado) y uno oscuro (encendido),
-    // usando los colores del esquema actual.
+    public void DetenerTimer() => timerSegundo.Stop();
+
+    public void reiniciar()
+    {
+        tablero.Randomizar();
+        movimientosPista.Clear();
+        indicePista = 0;
+        segundosTranscurridos = 0;
+        ActualizarTodos();
+        timerSegundo.Start();
+    }
+
+    public void DarPista()
+    {
+        if (movimientosPista.Count == 0 || indicePista >= movimientosPista.Count)
+        {
+            var sol = tablero.Resolver();
+            if (sol == null || sol.Length == 0)
+            {
+                MessageBox.Show("No se encontró solución. Puede que ya esté resuelto.",
+                    "Pista", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                GeneradorSonido.Error();
+                return;
+            }
+            movimientosPista = [.. sol];
+            indicePista = 0;
+        }
+
+        if (indicePista < movimientosPista.Count)
+        {
+            var m = movimientosPista[indicePista];
+            int f = m[0], c = m[1];
+            MarcarBoton(f, c, Color.Red);
+
+            var limpiar = new System.Windows.Forms.Timer { Interval = 1500 };
+            limpiar.Tick += (_, _) =>
+            {
+                LimpiarBorde(f, c);
+                limpiar.Stop();
+            };
+            limpiar.Start();
+
+            indicePista++;
+            GeneradorSonido.Pista();
+        }
+    }
+
+    private void BtnClickHandler(object sender, EventArgs e)
+    {
+        if (sender is not Button btn || btn.Tag is not (int fila, int columna)) return;
+
+        tablero.Presionar(fila, columna);
+        MostrarFeedback(fila, columna);
+        GeneradorSonido.Click();
+
+        int n = tablero.Tamano;
+        for (int c = 0; c < n; c++)
+            ActualizarBoton(fila, c);
+        for (int f = 0; f < n; f++)
+            ActualizarBoton(f, columna);
+
+        bool encontrado = false;
+        for (int i = 0; i < movimientosPista.Count; i++)
+        {
+            var m = movimientosPista[i];
+            if (m[0] == fila && m[1] == columna)
+            {
+                movimientosPista.RemoveAt(i);
+                if (i < indicePista) indicePista--;
+                encontrado = true;
+                break;
+            }
+        }
+        if (!encontrado)
+        {
+            movimientosPista.Clear();
+            indicePista = 0;
+        }
+
+        CeldaPresionada?.Invoke(fila, columna, tablero.Turnos);
+
+        if (tablero.EsTerminado())
+        {
+            timerSegundo.Stop();
+            GeneradorSonido.Victoria();
+            Victoria?.Invoke(tablero.Turnos, segundosTranscurridos);
+        }
+    }
+
     private void GenerarIconos()
     {
         iconoApagado?.Dispose();
@@ -103,7 +208,6 @@ public class ControlTablero : UserControl
             g.FillEllipse(brush, 3, 3, tamanoIcono - 6, tamanoIcono - 6);
             using var pen = new Pen(colorOff.Darker(), 1);
             g.DrawEllipse(pen, 3, 3, tamanoIcono - 6, tamanoIcono - 6);
-            // Brillo especular en la parte superior izquierda
             using var highlight = new SolidBrush(Color.FromArgb(64, Color.White));
             g.FillEllipse(highlight, tamanoIcono / 3, tamanoIcono / 3, tamanoIcono / 3, tamanoIcono / 3);
         }
@@ -119,45 +223,43 @@ public class ControlTablero : UserControl
         }
     }
 
-    // Cambia el icono de un botón individual según el estado de la luz.
-    public void ActualizarBoton(int fila, int columna, bool encendida)
+    public void ActualizarBoton(int fila, int columna)
     {
+        bool encendida = tablero.EstaEncendidaLuz(fila, columna);
         var img = encendida ? iconoEncendido : iconoApagado;
         botones[fila, columna].Image = img != null ? new Bitmap(img) : null;
         botones[fila, columna].BackColor = Color.Transparent;
     }
 
-    // Refresca todos los botones desde una matriz de estado.
-    public void ActualizarTodos(bool[,] estado)
+    public void ActualizarTodos()
     {
-        for (int f = 0; f < tamano; f++)
-            for (int c = 0; c < tamano; c++)
-                ActualizarBoton(f, c, estado[f, c]);
+        int n = tablero.Tamano;
+        for (int f = 0; f < n; f++)
+            for (int c = 0; c < n; c++)
+                ActualizarBoton(f, c);
     }
 
-    // Resalta temporalmente (250ms) toda la fila y columna de la celda presionada.
     public void MostrarFeedback(int fila, int columna)
     {
         timerFeedback?.Stop();
 
-        for (int c = 0; c < tamano; c++)
+        for (int c = 0; c < tablero.Tamano; c++)
             botones[fila, c].BackColor = ColorResalte;
-        for (int f = 0; f < tamano; f++)
+        for (int f = 0; f < tablero.Tamano; f++)
             botones[f, columna].BackColor = ColorResalte;
 
         timerFeedback = new System.Windows.Forms.Timer { Interval = 250 };
         timerFeedback.Tick += (_, _) =>
         {
-            for (int c = 0; c < tamano; c++)
+            for (int c = 0; c < tablero.Tamano; c++)
                 botones[fila, c].BackColor = Color.Transparent;
-            for (int f = 0; f < tamano; f++)
+            for (int f = 0; f < tablero.Tamano; f++)
                 botones[f, columna].BackColor = Color.Transparent;
             timerFeedback.Stop();
         };
         timerFeedback.Start();
     }
 
-    // Pone un borde de 3px del color indicado sobre un botón (para la pista).
     public void MarcarBoton(int fila, int columna, Color colorBorde)
     {
         var fa = botones[fila, columna].FlatAppearance;
@@ -166,7 +268,6 @@ public class ControlTablero : UserControl
         botones[fila, columna].Invalidate();
     }
 
-    // Restaura el borde a 0px (sin borde).
     public void LimpiarBorde(int fila, int columna)
     {
         var fa = botones[fila, columna].FlatAppearance;
@@ -174,7 +275,6 @@ public class ControlTablero : UserControl
         botones[fila, columna].Invalidate();
     }
 
-    // Cambia el esquema de color por índice. Regenera los iconos.
     public bool CambiarEsquemaColor(int indice)
     {
         if (indice < 0 || indice >= Esquemas.Length) return false;
@@ -184,7 +284,6 @@ public class ControlTablero : UserControl
     }
 }
 
-// Extensiones auxiliares para oscurecer o aclarar un Color.
 internal static class ColorExtensions
 {
     public static Color Darker(this Color c) => Color.FromArgb(c.A, Math.Max(0, c.R - 40), Math.Max(0, c.G - 40), Math.Max(0, c.B - 40));

@@ -14,7 +14,6 @@ public class PantallaMenu : UserControl
     public event EventHandler EstadisticasSolicitadas;
 
     private readonly NumericUpDown spinnerTamano;
-    private readonly Label labelStats;
     private static readonly string[] Niveles = ["Fácil", "Intermedio", "Difícil"];
     private static readonly int[] Tamanos = [4, 6, 8];
 
@@ -134,36 +133,6 @@ public class PantallaMenu : UserControl
         btnStats.Click += (_, _) => EstadisticasSolicitadas?.Invoke(this, EventArgs.Empty);
         central.Controls.Add(btnStats);
 
-        // Label de resumen de estadísticas
-        labelStats = new Label
-        {
-            ForeColor = Color.FromArgb(180, 255, 180),
-            Font = new Font("Segoe UI", 12),
-            AutoSize = true,
-            Anchor = AnchorStyles.None,
-            Margin = new Padding(0, 10, 0, 0),
-        };
-        central.Controls.Add(labelStats);
-
         Controls.Add(overlay);
-
-        ActualizarEstadisticas();
-    }
-
-    // Actualiza el texto de estadísticas globales (total partidas, ganadas, mejor récord).
-    public void ActualizarEstadisticas()
-    {
-        int totalJug = 0, totalGan = 0, mejorRecord = 0;
-        for (int n = 3; n <= 8; n++)
-        {
-            totalJug += EstadisticasRepository.GetJugadas(n);
-            totalGan += EstadisticasRepository.GetGanadas(n);
-            int r = EstadisticasRepository.GetRecord(n);
-            if (r > 0 && (mejorRecord == 0 || r < mejorRecord))
-                mejorRecord = r;
-        }
-        labelStats.Text = totalJug > 0
-            ? $"Récord: {mejorRecord} mov  |  Partidas: {totalJug}  |  Ganadas: {totalGan}"
-            : "Bienvenido! Aún no hay partidas guardadas.";
     }
 }
