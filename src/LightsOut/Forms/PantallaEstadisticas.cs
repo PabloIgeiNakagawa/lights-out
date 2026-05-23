@@ -8,13 +8,17 @@ namespace LightsOut.Forms;
 // Usa DataTable como fuente del DataGridView para ordenamiento y formato automáticos.
 public class PantallaEstadisticas : UserControl
 {
-    private readonly VentanaPrincipal ventanaJuego;
+    public event EventHandler VolverSolicitado;
+
+    public Size TamanioRecomendado => new(850, 480);
+
+    public string textoVentana => "Lights Out - Estadísticas";
+
     private readonly DataGridView tabla;
     private readonly DataTable modeloTabla;
 
-    public PantallaEstadisticas(VentanaPrincipal ventanaJuego)
+    public PantallaEstadisticas()
     {
-        this.ventanaJuego = ventanaJuego;
         Dock = DockStyle.Fill;
         Padding = new Padding(30);
 
@@ -78,7 +82,7 @@ public class PantallaEstadisticas : UserControl
         };
 
         var btnVolver = new BotonMenu("Volver");
-        btnVolver.Click += (_, _) => ventanaJuego.MostrarMenu();
+        btnVolver.Click += (_, _) => VolverSolicitado?.Invoke(this, EventArgs.Empty);
         flowBotones.Controls.Add(btnVolver);
 
         var btnReset = new BotonMenu("Resetear estadísticas") { Margin = new Padding(15, 6, 0, 6) };

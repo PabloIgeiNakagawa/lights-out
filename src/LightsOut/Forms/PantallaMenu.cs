@@ -8,16 +8,19 @@ namespace LightsOut.Forms;
 // spinner para tamaño personalizado (3–8) y acceso a estadísticas.
 public class PantallaMenu : UserControl
 {
-    private readonly VentanaPrincipal ventanaJuego;
+    public Size TamanioRecomendado => new(500, 550);
+
+    public event EventHandler<int> JuegoSolicitado;
+    public event EventHandler EstadisticasSolicitadas;
+
     private readonly NumericUpDown spinnerTamano;
     private readonly Label labelStats;
     private static readonly string[] Niveles = ["Fácil", "Intermedio", "Difícil"];
-    private static readonly int[] Tamanos = [4, 5, 6];
+    private static readonly int[] Tamanos = [4, 6, 8];
 
     // Construye toda la UI del menú: fondo, overlay, títulos, botones, spinner y stats.
-    public PantallaMenu(VentanaPrincipal ventanaJuego)
+    public PantallaMenu()
     {
-        this.ventanaJuego = ventanaJuego;
         Dock = DockStyle.Fill;
 
         // Fondo oscuro sólido.
@@ -46,7 +49,7 @@ public class PantallaMenu : UserControl
         // Título
         var titulo = new Label
         {
-            Text = "LIGHT OUT",
+            Text = "LIGHTS OUT",
             Font = new Font("Segoe UI", 42, FontStyle.Bold),
             ForeColor = Color.White,
             AutoSize = true,
@@ -77,7 +80,7 @@ public class PantallaMenu : UserControl
         {
             var btn = new BotonMenu(Niveles[i]) { Margin = new Padding(0, 6, 0, 6) };
             int idx = i;
-            btn.Click += (_, _) => ventanaJuego.MostrarJuego(Tamanos[idx]);
+            btn.Click += (_, _) => JuegoSolicitado?.Invoke(this, Tamanos[idx]);
             central.Controls.Add(btn);
         }
 
@@ -119,12 +122,12 @@ public class PantallaMenu : UserControl
 
         // Botón jugar con tamaño personalizado
         var btnJugar = new BotonMenu("Jugar") { Margin = new Padding(0, 6, 0, 6) };
-        btnJugar.Click += (_, _) => ventanaJuego.MostrarJuego((int)spinnerTamano.Value);
+        btnJugar.Click += (_, _) => JuegoSolicitado?.Invoke(this, (int)spinnerTamano.Value);
         central.Controls.Add(btnJugar);
 
         // Botón estadísticas
         var btnStats = new BotonMenu("Estadísticas") { Margin = new Padding(0, 6, 0, 6) };
-        btnStats.Click += (_, _) => ventanaJuego.MostrarEstadisticas();
+        btnStats.Click += (_, _) => EstadisticasSolicitadas?.Invoke(this, EventArgs.Empty);
         central.Controls.Add(btnStats);
 
         // Label de resumen de estadísticas

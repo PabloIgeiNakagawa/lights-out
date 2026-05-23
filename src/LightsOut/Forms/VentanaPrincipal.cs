@@ -33,15 +33,16 @@ public class VentanaPrincipal : Form
         panelJuego = null;
 
         panelMenu?.Dispose();
-        panelMenu = new PantallaMenu(this);
+        panelMenu = new PantallaMenu();
+        panelMenu.JuegoSolicitado += (_, t) => MostrarJuego(t);
+        panelMenu.EstadisticasSolicitadas += (_, _) => MostrarEstadisticas();
 
         panelPrincipal.Controls.Clear();
         panelPrincipal.Controls.Add(panelMenu);
         panelMenu.Dock = DockStyle.Fill;
 
-        Size = new Size(500, 550);
+        Size = panelMenu.TamanioRecomendado;
         CenterToScreen();
-        Text = "Lights Out";
     }
 
     // Inicia una partida del tamaño dado. Calcula el tamaño dinámico de la ventana
@@ -49,20 +50,15 @@ public class VentanaPrincipal : Form
     public void MostrarJuego(int tamano)
     {
         panelJuego?.Dispose();
-        panelJuego = new PantallaJuego(this, tamano);
+        panelJuego = new PantallaJuego(tamano);
+        panelJuego.VolverSolicitado += (_, _) => MostrarMenu();
 
         panelPrincipal.Controls.Clear();
         panelPrincipal.Controls.Add(panelJuego);
         panelJuego.Dock = DockStyle.Fill;
 
-        Text = $"Lights Out - {tamano}x{tamano}";
-
-        int iconoSize = Math.Max(40, Math.Min(70, 400 / tamano));
-        int btnSize = iconoSize + 16;
-        int gridPx = tamano * btnSize;
-        int ancho = Math.Max(620, gridPx + 60);
-        int alto = Math.Max(500, gridPx + 130);
-        Size = new Size(ancho, alto);
+        Text = panelJuego.textoVentana;
+        Size = panelJuego.TamanioRecomendado;
         CenterToScreen();
     }
 
@@ -72,13 +68,15 @@ public class VentanaPrincipal : Form
         panelJuego?.Dispose();
         panelJuego = null;
 
-        var panel = new PantallaEstadisticas(this);
+        var panel = new PantallaEstadisticas();
+        panel.VolverSolicitado += (_, _) => MostrarMenu();
+
         panelPrincipal.Controls.Clear();
         panelPrincipal.Controls.Add(panel);
         panel.Dock = DockStyle.Fill;
 
-        Size = new Size(850, 480);
+        Text = panel.textoVentana;
+        Size = panel.TamanioRecomendado;
         CenterToScreen();
-        Text = "Lights Out - Estadísticas";
     }
 }

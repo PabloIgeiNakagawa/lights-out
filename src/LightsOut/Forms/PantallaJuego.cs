@@ -11,7 +11,24 @@ namespace LightsOut.Forms;
 // el sistema de pistas y el mute.
 public class PantallaJuego : UserControl
 {
-    private readonly VentanaPrincipal ventanaJuego;
+    public event EventHandler VolverSolicitado;
+
+    public Size TamanioRecomendado
+    {
+        get
+        {
+            int n = tablero.Tamano;
+            int iconoSize = Math.Max(40, Math.Min(70, 400 / n));
+            int btnSize = iconoSize + 16;
+            int gridPx = n * btnSize;
+            int ancho = Math.Max(620, gridPx + 60);
+            int alto = Math.Max(500, gridPx + 130);
+            return new Size(ancho, alto);
+        }
+    }
+
+    public string textoVentana => $"Lights Out - {tablero.Tamano}x{tablero.Tamano}";
+
     private readonly Tablero tablero;
     private readonly ControlTablero vistaTablero;
 
@@ -32,10 +49,8 @@ public class PantallaJuego : UserControl
     private int indicePista;
 
     // Inicializa modelo, construye UI y arranca el timer de 1 segundo.
-    public PantallaJuego(VentanaPrincipal ventanaJuego, int tamano)
+    public PantallaJuego(int tamano)
     {
-        this.ventanaJuego = ventanaJuego;
-
         tablero = new Tablero(tamano);
         tablero.Randomizar();
 
@@ -165,7 +180,7 @@ public class PantallaJuego : UserControl
             if (r != DialogResult.Yes) return;
         }
         timerSegundo.Stop();
-        ventanaJuego.MostrarMenu();
+        VolverSolicitado?.Invoke(this, EventArgs.Empty);
     }
 
     // Genera un nuevo tablero aleatorio y resetea contadores, timer y pistas.
