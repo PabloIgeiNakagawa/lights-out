@@ -75,7 +75,7 @@ public class PantallaMenu : UserControl
         // Botones de dificultad predefinidos
         for (int i = 0; i < Niveles.Length; i++)
         {
-            var btn = new BotonMenu(Niveles[i]);
+            var btn = new BotonMenu(Niveles[i]) { Margin = new Padding(0, 6, 0, 6) };
             int idx = i;
             btn.Click += (_, _) => ventanaJuego.MostrarJuego(Tamanos[idx]);
             central.Controls.Add(btn);
@@ -118,12 +118,12 @@ public class PantallaMenu : UserControl
         central.Controls.Add(panelSpinner);
 
         // Botón jugar con tamaño personalizado
-        var btnJugar = new BotonMenu("Jugar");
+        var btnJugar = new BotonMenu("Jugar") { Margin = new Padding(0, 6, 0, 6) };
         btnJugar.Click += (_, _) => ventanaJuego.MostrarJuego((int)spinnerTamano.Value);
         central.Controls.Add(btnJugar);
 
         // Botón estadísticas
-        var btnStats = new BotonMenu("Estadísticas");
+        var btnStats = new BotonMenu("Estadísticas") { Margin = new Padding(0, 6, 0, 6) };
         btnStats.Click += (_, _) => ventanaJuego.MostrarEstadisticas();
         central.Controls.Add(btnStats);
 
@@ -166,6 +166,6 @@ public class PantallaMenu : UserControl
         int m = p.Controls.Cast<Control>().Where(c => c != excepto).Max(c => c.Width);
         foreach (Control c in p.Controls)
             if (c != excepto)
-                c.Margin = new Padding((m - c.Width) / 2, c.Margin.Top, 0, 0);
+                c.Margin = new Padding((m - c.Width) / 2, c.Margin.Top, 0, c.Margin.Bottom);
     }
 }

@@ -69,7 +69,7 @@ public class PantallaEstadisticas : UserControl
         btnCerrar.Click += (_, _) => ventanaJuego.MostrarMenu();
         flowBotones.Controls.Add(btnCerrar);
 
-        var btnReset = new BotonMenu("Resetear estadísticas");
+        var btnReset = new BotonMenu("Resetear estadísticas") { Margin = new Padding(15, 6, 0, 6) };
         btnReset.Click += (_, _) =>
         {
             var r = MessageBox.Show(
