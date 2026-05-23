@@ -27,14 +27,15 @@ public class PantallaMenu : UserControl
             BackColor = Color.FromArgb(30, 30, 40),
         };
 
-        // FlowLayoutPanel con los controles del menú, centrado manualmente
-        var central = new FlowLayoutPanel
+        // TableLayoutPanel con los controles del menú, centrado manualmente
+        var central = new TableLayoutPanel
         {
             AutoSize = true,
-            FlowDirection = FlowDirection.TopDown,
-            WrapContents = false,
+            AutoSizeMode = AutoSizeMode.GrowAndShrink,
             Padding = new Padding(30),
+            ColumnCount = 1,
         };
+        central.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
         overlay.Resize += (_, _) =>
         {
             central.Left = (overlay.Width - central.Width) / 2;
@@ -43,14 +44,14 @@ public class PantallaMenu : UserControl
         overlay.Controls.Add(central);
 
         // Título
-        central.Controls.Add(new Label
+        var titulo = new Label
         {
             Text = "LIGHT OUT",
             Font = new Font("Segoe UI", 42, FontStyle.Bold),
             ForeColor = Color.White,
             AutoSize = true,
-            Margin = new Padding(0, 0, 0, 5),
-        });
+        };
+        central.Controls.Add(titulo);
 
         // Subtítulo
         central.Controls.Add(new Label
@@ -90,14 +91,19 @@ public class PantallaMenu : UserControl
         });
 
         // Fila: label "Tamaño personalizado:" + NumericUpDown
-        var panelSpinner = new Panel { AutoSize = true };
+        var panelSpinner = new FlowLayoutPanel
+        {
+            AutoSize = true,
+            FlowDirection = FlowDirection.LeftToRight,
+            WrapContents = false,
+        };
         panelSpinner.Controls.Add(new Label
         {
             Text = "Tamaño personalizado:",
             ForeColor = Color.White,
             Font = new Font("Segoe UI", 14),
             AutoSize = true,
-            Location = new Point(0, 5),
+            Margin = new Padding(0, 5, 5, 0),
         });
 
         spinnerTamano = new NumericUpDown
@@ -107,7 +113,6 @@ public class PantallaMenu : UserControl
             Value = 4,
             Width = 70,
             TextAlign = HorizontalAlignment.Center,
-            Location = new Point(185, 2),
         };
         panelSpinner.Controls.Add(spinnerTamano);
         central.Controls.Add(panelSpinner);
@@ -132,6 +137,8 @@ public class PantallaMenu : UserControl
         };
         central.Controls.Add(labelStats);
 
+        Load += (_, _) => CentrarControles(central, titulo);
+
         Controls.Add(overlay);
 
         ActualizarEstadisticas();
@@ -152,5 +159,13 @@ public class PantallaMenu : UserControl
         labelStats.Text = totalJug > 0
             ? $"Récord: {mejorRecord} mov  |  Partidas: {totalJug}  |  Ganadas: {totalGan}"
             : "Bienvenido! Aún no hay partidas guardadas.";
+    }
+
+    private static void CentrarControles(TableLayoutPanel p, Control excepto)
+    {
+        int m = p.Controls.Cast<Control>().Where(c => c != excepto).Max(c => c.Width);
+        foreach (Control c in p.Controls)
+            if (c != excepto)
+                c.Margin = new Padding((m - c.Width) / 2, c.Margin.Top, 0, 0);
     }
 }

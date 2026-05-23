@@ -13,6 +13,7 @@ public class BotonMenu : Button
         ForeColor = Color.White;
         Font = new Font("Segoe UI", 16, FontStyle.Bold);
         Cursor = Cursors.Hand;
+        Margin = new Padding(0, 6, 0, 6);
         Size = new Size(200, 38);
     }
 }
