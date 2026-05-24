@@ -22,7 +22,7 @@ public class PantallaJuego : UserControl
             int btnSize = iconoSize + 16;
             int gridPx = n * btnSize;
             int ancho = Math.Max(620, gridPx + 60);
-            int alto = Math.Max(500, gridPx + 130);
+            int alto = Math.Max(500, gridPx + 170);
             return new Size(ancho, alto);
         }
     }
@@ -77,10 +77,7 @@ public class PantallaJuego : UserControl
 
         // --- Centro: grilla del tablero ---
         vistaTablero = new ControlTablero(new Tablero(tamano));
-        vistaTablero.Dock = DockStyle.None;
-        vistaTablero.AutoSize = true;
-        vistaTablero.AutoSizeMode = AutoSizeMode.GrowAndShrink;
-        vistaTablero.Anchor = AnchorStyles.None;
+        vistaTablero.Dock = DockStyle.Fill;
         vistaTablero.CeldaPresionada += OnCeldaPresionada;
         vistaTablero.Victoria += OnVictoria;
         vistaTablero.TickSegundo += segs => labelTiempo.Text = $"Tiempo: {FormatearTiempo(segs)}";

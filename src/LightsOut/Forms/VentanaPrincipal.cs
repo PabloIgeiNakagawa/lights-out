@@ -41,7 +41,7 @@ public class VentanaPrincipal : Form
         panelPrincipal.Controls.Add(panelMenu);
         panelMenu.Dock = DockStyle.Fill;
 
-        Size = panelMenu.TamanioRecomendado;
+        ClientSize = panelMenu.TamanioRecomendado;
         CenterToScreen();
     }
 
@@ -58,7 +58,7 @@ public class VentanaPrincipal : Form
         panelJuego.Dock = DockStyle.Fill;
 
         Text = panelJuego.textoVentana;
-        Size = panelJuego.TamanioRecomendado;
+        ClientSize = panelJuego.TamanioRecomendado;
         CenterToScreen();
     }
 
@@ -76,7 +76,7 @@ public class VentanaPrincipal : Form
         panel.Dock = DockStyle.Fill;
 
         Text = panel.textoVentana;
-        Size = panel.TamanioRecomendado;
+        ClientSize = panel.TamanioRecomendado;
         CenterToScreen();
     }
 }
