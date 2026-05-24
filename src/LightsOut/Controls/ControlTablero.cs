@@ -230,8 +230,8 @@ public class ControlTablero : UserControl
         iconoApagado?.Dispose();
         iconoEncendido?.Dispose();
 
-        Color colorOff = Esquemas[esquemaActual][0];
-        Color colorOn = Esquemas[esquemaActual][1];
+        Color colorOn = Esquemas[esquemaActual][0];
+        Color colorOff = Esquemas[esquemaActual][1];
 
         iconoApagado = new Bitmap(tamanoIcono, tamanoIcono);
         using (var g = Graphics.FromImage(iconoApagado))
