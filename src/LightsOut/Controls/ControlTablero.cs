@@ -112,7 +112,42 @@ public class ControlTablero : UserControl
         indicePista = 0;
         tablero.TiempoPartida = 0;
         ActualizarTodos();
+        foreach (var btn in botones)
+            btn.Enabled = true;
         timerSegundo.Start();
+    }
+
+    private void AnimarVictoria(Action callback)
+    {
+        timerSegundo.Stop();
+        GeneradorSonido.Victoria();
+
+        int n = tablero.Tamano;
+        int totalDiagonales = 2 * n - 1;
+        int paso = 0;
+
+        foreach (var btn in botones)
+            btn.Enabled = false;
+
+        var timer = new System.Windows.Forms.Timer { Interval = 80 };
+        timer.Tick += (_, _) =>
+        {
+            for (int f = 0; f < n; f++)
+            {
+                int c = paso - f;
+                if (c >= 0 && c < n)
+                    botones[f, c].BackColor = Color.Gold;
+            }
+
+            paso++;
+            if (paso >= totalDiagonales)
+            {
+                timer.Stop();
+                timer.Dispose();
+                callback?.Invoke();
+            }
+        };
+        timer.Start();
     }
 
     public void DarPista()
@@ -186,9 +221,7 @@ public class ControlTablero : UserControl
 
         if (tablero.EsTerminado())
         {
-            timerSegundo.Stop();
-            GeneradorSonido.Victoria();
-            Victoria?.Invoke(tablero.Turnos, tablero.TiempoPartida);
+            AnimarVictoria(() => Victoria?.Invoke(tablero.Turnos, tablero.TiempoPartida));
         }
     }
 
