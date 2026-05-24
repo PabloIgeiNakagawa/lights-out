@@ -137,7 +137,6 @@ public class PantallaJuego : UserControl
         comboColor.SelectedIndexChanged += (_, _) =>
         {
             vistaTablero.CambiarEsquemaColor(comboColor.SelectedIndex);
-            vistaTablero.ActualizarTodos();
         };
         panelInferior.Controls.Add(comboColor);
 
@@ -182,7 +181,7 @@ public class PantallaJuego : UserControl
 
     private void AccionReiniciar()
     {
-        vistaTablero.reiniciar();
+        vistaTablero.Reiniciar();
         labelTiempo.Text = "Tiempo: 00:00";
         contadorDeTurnos.Text = "Turnos: 0";
     }

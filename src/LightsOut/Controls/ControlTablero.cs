@@ -27,7 +27,7 @@ public class ControlTablero : UserControl
     private Bitmap iconoEncendido;
     private System.Windows.Forms.Timer timerFeedback;
     private readonly System.Windows.Forms.Timer timerSegundo = new() { Interval = 1000 };
-    private int segundosTranscurridos;
+
     private List<int[]> movimientosPista = new();
     private int indicePista;
 
@@ -95,8 +95,8 @@ public class ControlTablero : UserControl
 
         timerSegundo.Tick += (_, _) =>
         {
-            segundosTranscurridos++;
-            TickSegundo?.Invoke(segundosTranscurridos);
+            tablero.TiempoPartida++;
+            TickSegundo?.Invoke(tablero.TiempoPartida);
         };
         timerSegundo.Start();
 
@@ -105,12 +105,12 @@ public class ControlTablero : UserControl
 
     public void DetenerTimer() => timerSegundo.Stop();
 
-    public void reiniciar()
+    public void Reiniciar()
     {
         tablero.Randomizar();
         movimientosPista.Clear();
         indicePista = 0;
-        segundosTranscurridos = 0;
+        tablero.TiempoPartida = 0;
         ActualizarTodos();
         timerSegundo.Start();
     }
@@ -188,7 +188,7 @@ public class ControlTablero : UserControl
         {
             timerSegundo.Stop();
             GeneradorSonido.Victoria();
-            Victoria?.Invoke(tablero.Turnos, segundosTranscurridos);
+            Victoria?.Invoke(tablero.Turnos, tablero.TiempoPartida);
         }
     }
 
@@ -280,6 +280,7 @@ public class ControlTablero : UserControl
         if (indice < 0 || indice >= Esquemas.Length) return false;
         esquemaActual = indice;
         GenerarIconos();
+        ActualizarTodos();
         return true;
     }
 }
