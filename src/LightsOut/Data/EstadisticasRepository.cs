@@ -21,6 +21,15 @@ public static class EstadisticasRepository
         GuardarDatos();
     }
 
+    public static void RegistrarAbandono(int n, int tiempoPartida)
+    {
+        var d = Obtener(n);
+        d.Jugadas++;
+        d.Racha = 0;
+        d.TiempoTotal += tiempoPartida;
+        GuardarDatos();
+    }
+
     public static void CargarDatos()
     {
         try

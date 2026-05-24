@@ -171,9 +171,11 @@ public class PantallaJuego : UserControl
         if (vistaTablero.Tablero.Turnos > 0)
         {
             var r = MessageBox.Show(
-                "Hay una partida en curso. Volver al menú perderá el progreso.\n¿Desea continuar?",
+                "Hay una partida en curso. Si vuelve al menú se contará como partida perdida.\n¿Desea continuar?",
                 "Confirmar", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
             if (r != DialogResult.Yes) return;
+
+            EstadisticasRepository.RegistrarAbandono(tamano, vistaTablero.Tablero.TiempoPartida);
         }
         vistaTablero.DetenerTimer();
         VolverSolicitado?.Invoke(this, EventArgs.Empty);

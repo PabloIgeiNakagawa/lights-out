@@ -73,4 +73,27 @@ public class EstadisticasRepositoryTest : IDisposable
         Assert.Equal(0, EstadisticasRepository.GetJugadas(4));
         Assert.Equal(0, EstadisticasRepository.GetGanadas(4));
     }
+
+    [Fact]
+    public void AbandonoIncrementaJugadasPeroNoGanadas()
+    {
+        CleanDataFile();
+        EstadisticasRepository.RegistrarAbandono(4, 30);
+        Assert.Equal(1, EstadisticasRepository.GetJugadas(4));
+        Assert.Equal(0, EstadisticasRepository.GetGanadas(4));
+        Assert.Equal(0, EstadisticasRepository.GetRecord(4));
+    }
+
+    [Fact]
+    public void AbandonoReseteaRacha()
+    {
+        CleanDataFile();
+        EstadisticasRepository.RegistrarVictoria(4, 2, 0);
+        Assert.Equal(1, EstadisticasRepository.GetRacha(4));
+
+        EstadisticasRepository.RegistrarAbandono(4, 10);
+        Assert.Equal(2, EstadisticasRepository.GetJugadas(4));
+        Assert.Equal(1, EstadisticasRepository.GetGanadas(4));
+        Assert.Equal(0, EstadisticasRepository.GetRacha(4));
+    }
 }
