@@ -7,7 +7,7 @@ obj/
 
 ## Project-specific
 AGENTS.md
-lightout_data.txt
+lightout_data.json
 
 ## Legacy Java
 *.class

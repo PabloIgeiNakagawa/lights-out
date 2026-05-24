@@ -5,7 +5,7 @@ namespace LightsOut.Tests;
 
 public class EstadisticasRepositoryTest : IDisposable
 {
-    private const string DataFile = "lightout_data.txt";
+    private const string DataFile = "lightout_data.json";
     private readonly string backup;
 
     public EstadisticasRepositoryTest()
